@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Jardín de Palabras - María Paula</title>
+<style>
+*{scroll-behavior:smooth}
+body{background:linear-gradient(135deg,#d299c2 0%,#fef9d7 100%);font-family:Georgia;padding:0;margin:0;color:#333}
+.container{max-width:1100px;margin:auto;padding:20px}
+
+/* MENU */
+nav{background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);padding:15px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(168,85,183,0.1)}
+nav .container{display:flex;justify-content:center;gap:15px;flex-wrap:wrap}
+nav button{background:none;border:none;color:#5a3e5e;font-weight:bold;cursor:pointer;padding:8px 15px;border-radius:20px;font-size:16px;font-family:Georgia}
+nav button:hover{background:#a855b7;color:white}
+nav button.activo{background:#a855b7;color:white}
+
+/* PAGINAS */
+.pagina{display:none; animation:fadeIn 0.4s}
+.pagina.activa{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}}
+
+h1{font-size:50px;color:#5a3e5e;text-align:center;text-shadow:2px 2px 4px rgba(0,0,0,0.1)}
+h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
+
+/* INICIO */
+#inicio{text-align:center;padding:100px 20px}
+
+/* SOBRE */
+.sobre-caja{max-width:750px;margin:auto;background:rgba(255,255,255,0.95);padding:40px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(168,85,183,0.2)}
+.sobre-caja p{font-size:19px;line-height:1.9}
+
+/* CATALOGO */
+.catalogo{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px}
+.tarjeta{background:rgba(255,255,255,0.95);padding:25px;border-radius:15px;border-left:5px solid #a855b7;box-shadow:0 8px 20px rgba(168,85,183,0.15)}
+.tarjeta h3{color:#5a3e5e;margin-top:0}
+.tarjeta button{background:linear-gradient(135deg,#a855b7 0%,#d299c2 100%);color:white;border:none;padding:12px 20px;border-radius:25px;width:100%;margin-top:15px;cursor:pointer}
+
+/* ESCRIBEME */
+.escribeme-caja{max-width:600px;margin:auto;background:rgba(255,255,255,0.95);padding:50px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(168,85,183,0.2)}
+.whatsapp-btn{background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);font-size:18px;padding:15px 30px;display:inline-block;text-decoration:none;border-radius:30px;color:white;margin-top:20px}
+</style>
+</head>
+<body>
+    
+<nav><div class="container">
+    <button onclick="mostrarPagina('inicio')" id="btn-inicio" class="activo">Inicio</button>
+    <button onclick="mostrarPagina('sobre')" id="btn-sobre">Sobre María Paula</button>
+    <button onclick="mostrarPagina('catalogo')" id="btn-catalogo">Catálogo</button>
+    <button onclick="mostrarPagina('escribeme')" id="btn-escribeme">Escríbeme</button>
+</div></nav>
+
+<div class="container">
+    
+<!-- PAGINA 1: INICIO -->
+<div id="inicio" class="pagina activa">
+    <h1>🌸 El Jardín de Palabras 🌸</h1>
+    <p style="font-size:22px;color:#5a3e5e">Versos que florecen del alma<br>Por María Paula</p>
+</div>
+    
+<!-- PAGINA 2: SOBRE -->
+<div id="sobre" class="pagina">
+    <h2>✨ Sobre María Paula ✨</h2>
+    <div class="sobre-caja">
+        <p>
+        <b>Mini creadora de poemas</b> y sembradora de versos ✨<br><br>
+        Hola, soy María Paula. Tengo 14 años y este jardín lo creé para guardar 
+        todo lo que mi corazón no puede decir en voz alta.<br><br>
+        Cada poema es una emoción, un recuerdo, un suspiro. 
+        Escribo de amor, de la vida, de la lluvia y de las cosas pequeñas 
+        que nos hacen grandes.
+        </p>
+    </div>
+</div>
+
+<!-- PAGINA 3: CATALOGO VACIO -->
+<div id="catalogo" class="pagina">
+    <h2>🌼 Catálogo de Poemas 🌼</h2>
+    <p style="text-align:center;margin-bottom:40px;font-size:17px">Aquí aparecerán los poemas que se agreguen desde el panel</p>
+    <div class="catalogo" id="lista-poemas">
+        <p style="text-align:center;grid-column:1/-1;color:#777">Aún no hay poemas publicados 💜</p>
+    </div>
+</div>
+
+<!-- PAGINA 4: ESCRIBEME -->
+<div id="escribeme" class="pagina">
+    <h2>💌 Escríbeme 💌</h2>
+    <div class="escribeme-caja">
+        <p style="font-size:19px;line-height:1.8">
+        ¿Quieres un poema personalizado?<br>
+        ¿Te gustó algún verso y quieres dedicarlo?<br><br>
+        <b>Escríbeme directo a WhatsApp</b> y con gusto te respondo 💜
+        </p>
+        <a href="https://wa.me/50589223087?text=Hola%20María%20Paula%20vi%20tu%20Jardín" 
+        target="_blank" class="whatsapp-btn">📱 +505 8922 3087</a>
+    </div>
+</div>
+
+</div>
+
+<script>
+// ESTO ES LO NUEVO PARA QUE GUARDE Y MUESTRE
+let poemas = [];
+
+window.onload = function() {
+    cargarPoemas();
+    mostrarPoemas();
+}
+
+// FUNCION PARA CAMBIAR DE PAGINA
+function mostrarPagina(pagina) {
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('activo'));
+    document.getElementById(pagina).classList.add('activa');
+    document.getElementById('btn-' + pagina).classList.add('activo');
+}
+
+// CARGAR POEMAS DE LA MEMORIA
+function cargarPoemas() {
+    let guardados = localStorage.getItem('poemasJardin');
+    if(guardados) { 
+        poemas = JSON.parse(guardados); 
+    }
+}
+
+// MOSTRAR POEMAS EN EL CATALOGO
+function mostrarPoemas() {
+    let contenedor = document.getElementById('lista-poemas');
+    contenedor.innerHTML = "";
+    if(poemas.length === 0) {
+        contenedor.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#777">Aún no hay poemas publicados 💜</p>';
+        return;
+    }
+    poemas.forEach((poema) => {
+        contenedor.innerHTML += `
+        <div class="tarjeta">
+            <h3>${poema.titulo}</h3>
+            <p style="white-space:pre-line">${poema.texto}</p>
+        </div>`;
+    });
+}
+</script>
+
+</body></html>

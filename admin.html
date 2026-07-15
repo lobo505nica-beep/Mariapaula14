@@ -6,8 +6,10 @@
 <title>Panel Admin - El Jardín</title>
 <style>
 body{background:linear-gradient(135deg,#5a3e5e 0%,#a855b7 100%);font-family:Georgia;padding:20px;margin:0;color:white;min-height:100vh}
-.container{max-width:800px;margin:auto}
+.container{max-width:900px;margin:auto}
 h1{text-align:center;font-size:40px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+.stats{background:rgba(255,255,255,0.2);padding:20px;border-radius:15px;text-align:center;margin-bottom:20px;display:flex;justify-content:space-around;flex-wrap:wrap}
+.stats h3{margin:5px 10px;font-size:18px}
 .caja{background:rgba(255,255,255,0.95);padding:30px;border-radius:20px;margin-bottom:30px;color:#333;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
 .caja h2{color:#5a3e5e;margin-top:0}
 input, textarea{width:100%;padding:12px;margin:10px 0;border:2px solid #d299c2;border-radius:10px;font-family:Georgia;box-sizing:border-box;font-size:16px}
@@ -17,6 +19,8 @@ button:hover{transform:scale(1.05)}
 button.eliminar{background:#ff4d6d}
 .poema-admin{background:#f8f0ff;padding:15px;border-radius:10px;margin:10px 0;border-left:4px solid #a855b7}
 .poema-admin h3{margin:0 0 10px 0;color:#5a3e5e}
+.stats-poema{font-size:14px;color:#777;margin:10px 0;font-weight:bold}
+.comentario-admin{background:white;padding:8px;border-radius:8px;margin:5px 0;font-size:13px;color:#333}
 .link-volver{display:inline-block;margin-top:20px;color:white;text-decoration:underline;font-weight:bold}
 </style>
 </head>
@@ -24,6 +28,13 @@ button.eliminar{background:#ff4d6d}
 <div class="container">
     <h1>🌸 Panel de María Paula 🌸</h1>
     
+    <div class="stats">
+        <h3>👥 Seguidores: <span id="total-seguidores">0</span></h3>
+        <h3>📚 Poemas: <span id="total-poemas">0</span></h3>
+        <h3>💜 Likes: <span id="total-likes">0</span></h3>
+        <h3>💬 Comentarios: <span id="total-comentarios">0</span></h3>
+    </div>
+
     <div class="caja">
         <h2>✨ Publicar Nuevo Poema ✨</h2>
         <input type="text" id="titulo-poema" placeholder="Título del poema">
@@ -44,16 +55,17 @@ button.eliminar{background:#ff4d6d}
 
 <script>
 let poemas = [];
-window.onload = function() {cargarPoemas();mostrarPoemasAdmin();}
+window.onload = function() {cargarPoemas();mostrarPoemasAdmin();actualizarStats();}
 function agregarPoema() {
     let titulo = document.getElementById('titulo-poema').value.trim();
     let texto = document.getElementById('texto-poema').value.trim();
     if(titulo === "" || texto === "") {alert("Escribe título y poema");return;}
-    let nuevoPoema = {id: Date.now(), titulo: titulo, texto: texto};
+    let nuevoPoema = {id: Date.now(), titulo: titulo, texto: texto, likes: 0, comentarios: []};
     poemas.unshift(nuevoPoema);
     guardarPoemas();
     mostrarPoemasAdmin();
     limpiarFormulario();
+    actualizarStats();
     alert("Poema publicado! 💜");
 }
 function mostrarPoemasAdmin() {
@@ -64,7 +76,20 @@ function mostrarPoemasAdmin() {
         return;
     }
     poemas.forEach((poema) => {
-        contenedor.innerHTML += `<div class="poema-admin"><h3>${poema.titulo}</h3><p style="white-space:pre-line;font-size:14px">${poema.texto.substring(0,100)}...</p><button class="eliminar" onclick="eliminarPoema(${poema.id})">Eliminar</button></div>`;
+        let comentariosHTML = '';
+        if(poema.comentarios && poema.comentarios.length > 0){
+            poema.comentarios.forEach(c => {
+                comentariosHTML += `<div class="comentario-admin"><b>${c.usuario}:</b> ${c.texto}</div>`
+            })
+        }
+        contenedor.innerHTML += `
+        <div class="poema-admin">
+            <h3>${poema.titulo}</h3>
+            <p style="white-space:pre-line;font-size:14px">${poema.texto.substring(0,150)}${poema.texto.length > 150 ? '...' : ''}</p>
+            <div class="stats-poema">💜 Likes: ${poema.likes || 0} | 💬 Comentarios: ${(poema.comentarios || []).length}</div>
+            <div>${comentariosHTML}</div>
+            <button class="eliminar" onclick="eliminarPoema(${poema.id})">Eliminar</button>
+        </div>`;
     });
 }
 function eliminarPoema(id) {
@@ -72,10 +97,20 @@ function eliminarPoema(id) {
         poemas = poemas.filter(p => p.id !== id);
         guardarPoemas();
         mostrarPoemasAdmin();
+        actualizarStats();
     }
 }
 function limpiarFormulario(){document.getElementById('titulo-poema').value = "";document.getElementById('texto-poema').value = "";}
 function cargarPoemas() {let guardados = localStorage.getItem('poemasJardin');if(guardados) { poemas = JSON.parse(guardados); }}
 function guardarPoemas() {localStorage.setItem('poemasJardin', JSON.stringify(poemas));}
+function actualizarStats(){
+    let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');
+    let totalLikes = poemas.reduce((sum, p) => sum + (p.likes || 0), 0);
+    let totalComentarios = poemas.reduce((sum, p) => sum + (p.comentarios ? p.comentarios.length : 0), 0);
+    document.getElementById('total-seguidores').innerText = seguidores.length;
+    document.getElementById('total-poemas').innerText = poemas.length;
+    document.getElementById('total-likes').innerText = totalLikes;
+    document.getElementById('total-comentarios').innerText = totalComentarios;
+}
 </script>
 </body></html>

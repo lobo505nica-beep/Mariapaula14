@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin - El Jardín</title>
+<style>
+body{background:linear-gradient(135deg,#5a3e5e 0%,#a855b7 100%);font-family:Georgia;padding:20px;margin:0;color:white;min-height:100vh}
+.container{max-width:800px;margin:auto}
+h1{text-align:center;font-size:40px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
+.caja{background:rgba(255,255,255,0.95);padding:30px;border-radius:20px;margin-bottom:30px;color:#333;box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+.caja h2{color:#5a3e5e;margin-top:0}
+input, textarea{width:100%;padding:12px;margin:10px 0;border:2px solid #d299c2;border-radius:10px;font-family:Georgia;box-sizing:border-box;font-size:16px}
+textarea{resize:vertical;min-height:200px}
+button{background:linear-gradient(135deg,#a855b7 0%,#d299c2 100%);color:white;border:none;padding:12px 25px;border-radius:25px;cursor:pointer;font-size:16px;font-weight:bold;margin:5px}
+button:hover{transform:scale(1.05)}
+button.eliminar{background:#ff4d6d}
+.poema-admin{background:#f8f0ff;padding:15px;border-radius:10px;margin:10px 0;border-left:4px solid #a855b7}
+.poema-admin h3{margin:0 0 10px 0;color:#5a3e5e}
+.link-volver{display:inline-block;margin-top:20px;color:white;text-decoration:underline;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🌸 Panel de María Paula 🌸</h1>
+    
+    <div class="caja">
+        <h2>✨ Publicar Nuevo Poema ✨</h2>
+        <input type="text" id="titulo-poema" placeholder="Título del poema">
+        <textarea id="texto-poema" placeholder="Escribe tu poema aquí...&#10;&#10;Puedes darle Enter para hacer saltos de línea"></textarea>
+        <button onclick="agregarPoema()">Publicar Poema</button>
+        <button onclick="limpiarFormulario()">Limpiar</button>
+    </div>
+
+    <div class="caja">
+        <h2>📚 Poemas Publicados</h2>
+        <div id="lista-admin">
+            <p style="color:#777;text-align:center">Cargando...</p>
+        </div>
+    </div>
+
+    <a href="index.html" class="link-volver">← Volver al Jardín</a>
+</div>
+
+<script>
+let poemas = [];
+window.onload = function() {cargarPoemas();mostrarPoemasAdmin();}
+function agregarPoema() {
+    let titulo = document.getElementById('titulo-poema').value.trim();
+    let texto = document.getElementById('texto-poema').value.trim();
+    if(titulo === "" || texto === "") {alert("Escribe título y poema");return;}
+    let nuevoPoema = {id: Date.now(), titulo: titulo, texto: texto};
+    poemas.unshift(nuevoPoema);
+    guardarPoemas();
+    mostrarPoemasAdmin();
+    limpiarFormulario();
+    alert("Poema publicado! 💜");
+}
+function mostrarPoemasAdmin() {
+    let contenedor = document.getElementById('lista-admin');
+    contenedor.innerHTML = "";
+    if(poemas.length === 0) {
+        contenedor.innerHTML = '<p style="color:#777;text-align:center">Aún no has publicado poemas</p>';
+        return;
+    }
+    poemas.forEach((poema) => {
+        contenedor.innerHTML += `<div class="poema-admin"><h3>${poema.titulo}</h3><p style="white-space:pre-line;font-size:14px">${poema.texto.substring(0,100)}...</p><button class="eliminar" onclick="eliminarPoema(${poema.id})">Eliminar</button></div>`;
+    });
+}
+function eliminarPoema(id) {
+    if(confirm("¿Segura que quieres eliminar este poema?")) {
+        poemas = poemas.filter(p => p.id !== id);
+        guardarPoemas();
+        mostrarPoemasAdmin();
+    }
+}
+function limpiarFormulario(){document.getElementById('titulo-poema').value = "";document.getElementById('texto-poema').value = "";}
+function cargarPoemas() {let guardados = localStorage.getItem('poemasJardin');if(guardados) { poemas = JSON.parse(guardados); }}
+function guardarPoemas() {localStorage.setItem('poemasJardin', JSON.stringify(poemas));}
+</script>
+</body></html>

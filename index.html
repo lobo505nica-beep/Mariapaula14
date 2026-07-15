@@ -7,16 +7,25 @@
 <style>
 *{scroll-behavior:smooth}
 body{background:linear-gradient(135deg,#d299c2 0%,#fef9d7 100%);font-family:Georgia;padding:0;margin:0;color:#333}
+
+/* PANTALLA LOGIN */
+#auth-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#5a3e5e 0%,#a855b7 100%);display:flex;justify-content:center;align-items:center;z-index:999}
+.auth-caja{background:white;padding:40px;border-radius:20px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,0.3);max-width:400px;width:90%}
+.auth-caja h2{color:#5a3e5e;margin-bottom:10px}
+.auth-caja input{width:100%;padding:12px;margin:10px 0;border:2px solid #d299c2;border-radius:10px;font-family:Georgia;box-sizing:border-box;font-size:16px}
+.auth-caja button{background:linear-gradient(135deg,#a855b7 0%,#d299c2 100%);color:white;border:none;padding:12px 20px;border-radius:25px;width:100%;cursor:pointer;font-size:16px;font-weight:bold;margin-top:10px}
+.link-cambio{color:#a855b7;cursor:pointer;text-decoration:underline;margin-top:15px;font-size:14px}
+
+/* TU CONTENIDO NORMAL */
+#contenido{display:none}
 .container{max-width:1100px;margin:auto;padding:20px}
 
-/* MENU */
 nav{background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);padding:15px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(168,85,183,0.1)}
 nav .container{display:flex;justify-content:center;gap:15px;flex-wrap:wrap}
 nav button{background:none;border:none;color:#5a3e5e;font-weight:bold;cursor:pointer;padding:8px 15px;border-radius:20px;font-size:16px;font-family:Georgia}
 nav button:hover{background:#a855b7;color:white}
 nav button.activo{background:#a855b7;color:white}
 
-/* PAGINAS */
 .pagina{display:none; animation:fadeIn 0.4s}
 .pagina.activa{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}}
@@ -24,31 +33,51 @@ nav button.activo{background:#a855b7;color:white}
 h1{font-size:50px;color:#5a3e5e;text-align:center;text-shadow:2px 2px 4px rgba(0,0,0,0.1)}
 h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
 
-/* INICIO */
 #inicio{text-align:center;padding:100px 20px}
 
-/* SOBRE */
 .sobre-caja{max-width:750px;margin:auto;background:rgba(255,255,255,0.95);padding:40px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(168,85,183,0.2)}
 .sobre-caja p{font-size:19px;line-height:1.9}
 
-/* CATALOGO */
 .catalogo{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px}
 .tarjeta{background:rgba(255,255,255,0.95);padding:25px;border-radius:15px;border-left:5px solid #a855b7;box-shadow:0 8px 20px rgba(168,85,183,0.15)}
 .tarjeta h3{color:#5a3e5e;margin-top:0}
-.tarjeta button{background:linear-gradient(135deg,#a855b7 0%,#d299c2 100%);color:white;border:none;padding:12px 20px;border-radius:25px;width:100%;margin-top:15px;cursor:pointer}
 
-/* ESCRIBEME */
 .escribeme-caja{max-width:600px;margin:auto;background:rgba(255,255,255,0.95);padding:50px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(168,85,183,0.2)}
 .whatsapp-btn{background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);font-size:18px;padding:15px 30px;display:inline-block;text-decoration:none;border-radius:30px;color:white;margin-top:20px}
 </style>
 </head>
 <body>
     
+<!-- 1. PANTALLA DE LOGIN/REGISTRO -->
+<div id="auth-screen">
+    <div class="auth-caja" id="caja-login">
+        <h2>🌸 El Jardín de Palabras 🌸</h2>
+        <p style="color:#777;margin-bottom:20px">Entra con tu nombre y contraseña</p>
+        <input type="text" id="login-nombre" placeholder="Tu nombre">
+        <input type="password" id="login-pass" placeholder="Tu contraseña">
+        <button onclick="iniciarSesion()">Entrar</button>
+        <p class="link-cambio" onclick="mostrarRegistro()">¿Primera vez? Crear cuenta</p>
+    </div>
+
+    <div class="auth-caja" id="caja-registro" style="display:none">
+        <h2>🌸 Crear Cuenta 🌸</h2>
+        <p style="color:#777;margin-bottom:20px">Solo nombre y contraseña</p>
+        <input type="text" id="reg-nombre" placeholder="Elige tu nombre">
+        <input type="password" id="reg-pass" placeholder="Crea tu contraseña">
+        <button onclick="registrarse()">Crear Cuenta</button>
+        <p class="link-cambio" onclick="mostrarLogin()">¿Ya tienes cuenta? Entrar</p>
+    </div>
+</div>
+
+<!-- 2. TU PAGINA NORMAL CON LOS 4 BOTONES -->
+<div id="contenido">
+    
 <nav><div class="container">
     <button onclick="mostrarPagina('inicio')" id="btn-inicio" class="activo">Inicio</button>
     <button onclick="mostrarPagina('sobre')" id="btn-sobre">Sobre María Paula</button>
     <button onclick="mostrarPagina('catalogo')" id="btn-catalogo">Catálogo</button>
     <button onclick="mostrarPagina('escribeme')" id="btn-escribeme">Escríbeme</button>
+    <button onclick="cerrarSesion()" style="background:#ff4d6d;color:white">Salir</button>
 </div></nav>
 
 <div class="container">
@@ -56,7 +85,7 @@ h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
 <!-- PAGINA 1: INICIO -->
 <div id="inicio" class="pagina activa">
     <h1>🌸 El Jardín de Palabras 🌸</h1>
-    <p style="font-size:22px;color:#5a3e5e">Versos que florecen del alma<br>Por María Paula</p>
+    <p style="font-size:22px;color:#5a3e5e">Bienvenid@ <b id="nombre-usuario"></b> 💜<br>Versos que florecen del alma<br>Por María Paula</p>
 </div>
     
 <!-- PAGINA 2: SOBRE -->
@@ -74,7 +103,7 @@ h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
     </div>
 </div>
 
-<!-- PAGINA 3: CATALOGO VACIO -->
+<!-- PAGINA 3: CATALOGO -->
 <div id="catalogo" class="pagina">
     <h2>🌼 Catálogo de Poemas 🌼</h2>
     <p style="text-align:center;margin-bottom:40px;font-size:17px">Aquí aparecerán los poemas que se agreguen desde el panel</p>
@@ -98,33 +127,71 @@ h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
 </div>
 
 </div>
+</div>
 
 <script>
-// ESTO ES LO NUEVO PARA QUE GUARDE Y MUESTRE
-let poemas = [];
+let usuarios = [];
 
+function mostrarRegistro(){document.getElementById('caja-login').style.display='none';document.getElementById('caja-registro').style.display='block'}
+function mostrarLogin(){document.getElementById('caja-registro').style.display='none';document.getElementById('caja-login').style.display='block'}
+
+function registrarse(){
+    let nombre = document.getElementById('reg-nombre').value.trim();
+    let pass = document.getElementById('reg-pass').value;
+    if(nombre===""||pass===""){alert("Pon tu nombre y contraseña");return;}
+    cargarUsuarios();
+    if(usuarios.find(u=>u.nombre.toLowerCase()===nombre.toLowerCase())){alert("Ese nombre ya está ocupado");return;}
+    usuarios.push({nombre:nombre, pass:pass});
+    guardarUsuarios();
+    entrar(nombre);
+}
+
+function iniciarSesion(){
+    let nombre = document.getElementById('login-nombre').value.trim();
+    let pass = document.getElementById('login-pass').value;
+    cargarUsuarios();
+    let user = usuarios.find(u=>u.nombre===nombre && u.pass===pass);
+    if(!user){alert("Nombre o contraseña incorrectos");return;}
+    entrar(nombre);
+}
+
+function entrar(nombre){
+    localStorage.setItem('usuarioActual', nombre);
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('contenido').style.display='block';
+    document.getElementById('nombre-usuario').innerText = nombre;
+}
+
+function cerrarSesion(){
+    localStorage.removeItem('usuarioActual');
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('contenido').style.display='none';
+}
+
+function cargarUsuarios(){let g=localStorage.getItem('usuariosJardin');if(g)usuarios=JSON.parse(g)}
+function guardarUsuarios(){localStorage.setItem('usuariosJardin',JSON.stringify(usuarios))}
+
+// REVISAR SI YA HABIA ENTRADO ANTES
 window.onload = function() {
+    let nombre = localStorage.getItem('usuarioActual');
+    if(nombre){
+        entrar(nombre); // Si ya estaba logueado, entra directo
+    }
     cargarPoemas();
     mostrarPoemas();
 }
 
-// FUNCION PARA CAMBIAR DE PAGINA
+let poemas = [];
 function mostrarPagina(pagina) {
     document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('activo'));
     document.getElementById(pagina).classList.add('activa');
     document.getElementById('btn-' + pagina).classList.add('activo');
 }
-
-// CARGAR POEMAS DE LA MEMORIA
 function cargarPoemas() {
     let guardados = localStorage.getItem('poemasJardin');
-    if(guardados) { 
-        poemas = JSON.parse(guardados); 
-    }
+    if(guardados) { poemas = JSON.parse(guardados); }
 }
-
-// MOSTRAR POEMAS EN EL CATALOGO
 function mostrarPoemas() {
     let contenedor = document.getElementById('lista-poemas');
     contenedor.innerHTML = "";
@@ -133,11 +200,7 @@ function mostrarPoemas() {
         return;
     }
     poemas.forEach((poema) => {
-        contenedor.innerHTML += `
-        <div class="tarjeta">
-            <h3>${poema.titulo}</h3>
-            <p style="white-space:pre-line">${poema.texto}</p>
-        </div>`;
+        contenedor.innerHTML += `<div class="tarjeta"><h3>${poema.titulo}</h3><p style="white-space:pre-line">${poema.texto}</p></div>`;
     });
 }
 </script>

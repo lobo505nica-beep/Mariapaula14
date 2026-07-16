@@ -114,148 +114,34 @@ h2{text-align:center;font-size:40px;color:#5a3e5e;margin-bottom:40px}
 </div>
 </div>
 
-<script>
-let usuarios = [];
-let poemas = [];
-let usuarioActual = "";
-function mostrarRegistro(){document.getElementById('caja-login').style.display='none';document.getElementById('caja-registro').style.display='block'}
-function mostrarLogin(){document.getElementById('caja-registro').style.display='none';document.getElementById('caja-login').style.display='block'}
-function registrarse(){
-    let nombre = document.getElementById('reg-nombre').value.trim();
-    let pass = document.getElementById('reg-pass').value;
-    if(nombre===""||pass===""){alert("Pon tu nombre y contraseña");return;}
-    cargarUsuarios();
-    if(usuarios.find(u=>u.nombre.toLowerCase()===nombre.toLowerCase())){alert("Ese nombre ya está ocupado");return;}
-    usuarios.push({nombre:nombre, pass:pass});
-    guardarUsuarios();
-    entrar(nombre);
-}
-function iniciarSesion(){
-    let nombre = document.getElementById('login-nombre').value.trim();
-    let pass = document.getElementById('login-pass').value;
-    cargarUsuarios();
-    let user = usuarios.find(u=>u.nombre===nombre && u.pass===pass);
-    if(!user){alert("Nombre o contraseña incorrectos");return;}
-    entrar(nombre);
-}
-function entrar(nombre){
-    usuarioActual = nombre;
-    localStorage.setItem('usuarioActual', nombre);
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('contenido').style.display='block';
-    document.getElementById('nombre-usuario').innerText = nombre;
-    actualizarBotonSeguir();
-}
-function cerrarSesion(){
-    localStorage.removeItem('usuarioActual');
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('contenido').style.display='none';
-}
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, doc, updateDoc, onSnapshot, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const firebaseConfig = {apiKey: "AIzaSyCFL2dR5diNcME77pOqraScpfk3YFMRHQY",authDomain: "jardin-maria-paula.firebaseapp.com",projectId: "jardin-maria-paula",storageBucket: "jardin-maria-paula.firebasestorage.app",messagingSenderId: "640288766601",appId: "1:640288766601:web:bca09b2359c3fc5209e458",measurementId: "G-7MMBDYGPMS"};
+const app = initializeApp(firebaseConfig);const db = getFirestore(app);
+
+let usuarios = [];let poemas = [];let usuarioActual = "";
+window.mostrarRegistro = function(){document.getElementById('caja-login').style.display='none';document.getElementById('caja-registro').style.display='block'}
+window.mostrarLogin = function(){document.getElementById('caja-registro').style.display='none';document.getElementById('caja-login').style.display='block'}
+window.registrarse = function(){let nombre = document.getElementById('reg-nombre').value.trim();let pass = document.getElementById('reg-pass').value;if(nombre===""||pass===""){alert("Pon tu nombre y contraseña");return;}cargarUsuarios();if(usuarios.find(u=>u.nombre.toLowerCase()===nombre.toLowerCase())){alert("Ese nombre ya está ocupado");return;}usuarios.push({nombre:nombre, pass:pass});guardarUsuarios();entrar(nombre);}
+window.iniciarSesion = function(){let nombre = document.getElementById('login-nombre').value.trim();let pass = document.getElementById('login-pass').value;cargarUsuarios();let user = usuarios.find(u=>u.nombre===nombre && u.pass===pass);if(!user){alert("Nombre o contraseña incorrectos");return;}entrar(nombre);}
+function entrar(nombre){usuarioActual = nombre;localStorage.setItem('usuarioActual', nombre);document.getElementById('auth-screen').style.display='none';document.getElementById('contenido').style.display='block';document.getElementById('nombre-usuario').innerText = nombre;actualizarBotonSeguir();}
+window.cerrarSesion = function(){localStorage.removeItem('usuarioActual');document.getElementById('auth-screen').style.display='flex';document.getElementById('contenido').style.display='none';}
 function cargarUsuarios(){let g=localStorage.getItem('usuariosJardin');if(g)usuarios=JSON.parse(g)}
 function guardarUsuarios(){localStorage.setItem('usuariosJardin',JSON.stringify(usuarios))}
-window.onload = function() {
-    let nombre = localStorage.getItem('usuarioActual');
-    if(nombre){entrar(nombre);}
-    cargarPoemas();
-    mostrarPoemas();
-    actualizarContadorSeguidores();
-}
-function mostrarPagina(pagina) {
-    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('activo'));
-    document.getElementById(pagina).classList.add('activa');
-    document.getElementById('btn-' + pagina).classList.add('activo');
-}
-function cargarPoemas() {
-    let guardados = localStorage.getItem('poemasJardin');
-    if(guardados) { poemas = JSON.parse(guardados); }
-}
-function guardarPoemas() {localStorage.setItem('poemasJardin', JSON.stringify(poemas));}
-function mostrarPoemas() {
-    let contenedor = document.getElementById('lista-poemas');
-    contenedor.innerHTML = "";
-    if(poemas.length === 0) {
-        contenedor.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#777">Aún no hay poemas publicados 💜</p>';
-        return;
-    }
-    poemas.forEach((poema) => {
-        let likes = poema.likes || 0;
-        let comentariosHTML = '';
-        if(poema.comentarios && poema.comentarios.length > 0){
-            poema.comentarios.forEach(c => {
-                comentariosHTML += `<div class="comentario-item"><b>${c.usuario}:</b> ${c.texto}</div>`
-            })
-        }
-        let urlPoema = `https://mariapaula14.vercel.app/?poema=${poema.id}`;
-        let textoCompartir = encodeURIComponent(`Mira este poema: ${poema.titulo} - ${urlPoema}`);
-        contenedor.innerHTML += `
-        <div class="tarjeta">
-            <h3>${poema.titulo}</h3>
-            <p style="white-space:pre-line">${poema.texto}</p>
-            <div class="botones-poema">
-                <button class="btn-accion" onclick="darLike(${poema.id})">💜 Like <span class="contador">${likes}</span></button>
-                <button class="btn-accion" onclick="toggleComentarios(${poema.id})">💬 Comentar</button>
-                <a href="https://wa.me/?text=${textoCompartir}" target="_blank" class="btn-accion" style="text-decoration:none">📲 Compartir</a>
-            </div>
-            <div id="comentarios-${poema.id}" style="display:none">
-                <div class="comentarios-caja">
-                    ${comentariosHTML}
-                    <div style="display:flex;gap:5px;margin-top:10px">
-                        <input type="text" id="input-comentario-${poema.id}" placeholder="Escribe un comentario...">
-                        <button onclick="agregarComentario(${poema.id})">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    });
-}
-function darLike(id){
-    let poema = poemas.find(p => p.id === id);
-    poema.likes = (poema.likes || 0) + 1;
-    guardarPoemas();
-    mostrarPoemas();
-}
-function toggleComentarios(id){
-    let caja = document.getElementById(`comentarios-${id}`);
-    caja.style.display = caja.style.display === 'none' ? 'block' : 'none';
-}
-function agregarComentario(id){
-    let input = document.getElementById(`input-comentario-${id}`);
-    let texto = input.value.trim();
-    if(texto === "") return;
-    if(!usuarioActual){alert("Inicia sesión para comentar");return;}
-    let poema = poemas.find(p => p.id === id);
-    if(!poema.comentarios) poema.comentarios = [];
-    poema.comentarios.push({usuario: usuarioActual, texto: texto});
-    guardarPoemas();
-    mostrarPoemas();
-    toggleComentarios(id);
-}
-function toggleSeguir(){
-    let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');
-    if(seguidores.includes(usuarioActual)){
-        seguidores = seguidores.filter(u => u !== usuarioActual);
-    } else {
-        seguidores.push(usuarioActual);
-    }
-    localStorage.setItem('seguidoresJardin', JSON.stringify(seguidores));
-    actualizarBotonSeguir();
-    actualizarContadorSeguidores();
-}
-function actualizarBotonSeguir(){
-    let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');
-    let btn = document.getElementById('btn-seguir-nav');
-    if(seguidores.includes(usuarioActual)){
-        btn.innerText = "Siguiendo";
-        btn.classList.add('seguido');
-    } else {
-        btn.innerText = "Seguir";
-        btn.classList.remove('seguido');
-    }
-}
-function actualizarContadorSeguidores(){
-    let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');
-    document.getElementById('contador-seguidores').innerText = seguidores.length;
-}
+
+const q = query(collection(db, "poemas"), orderBy("fecha", "desc"));
+onSnapshot(q, (snapshot) => {poemas = [];snapshot.forEach((docu) => { poemas.push({id: docu.id, ...docu.data()}); });mostrarPoemas();});
+
+window.mostrarPoemas = function() {let contenedor = document.getElementById('lista-poemas');contenedor.innerHTML = "";if(poemas.length === 0) {contenedor.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:#777">Aún no hay poemas publicados 💜</p>';return;}poemas.forEach((poema) => {let likes = poema.likes || 0;let comentariosHTML = '';if(poema.comentarios && poema.comentarios.length > 0){poema.comentarios.forEach(c => {comentariosHTML += `<div class="comentario-item"><b>${c.usuario}:</b> ${c.texto}</div>`})}let textoCompartir = encodeURIComponent(`Mira este poema: ${poema.titulo}`);contenedor.innerHTML += `<div class="tarjeta"><h3>${poema.titulo}</h3><p style="white-space:pre-line">${poema.texto}</p><div class="botones-poema"><button class="btn-accion" onclick="darLike('${poema.id}')">💜 Like <span class="contador">${likes}</span></button><button class="btn-accion" onclick="toggleComentarios('${poema.id}')">💬 Comentar</button><a href="https://wa.me/?text=${textoCompartir}" target="_blank" class="btn-accion" style="text-decoration:none">📲 Compartir</a></div><div id="comentarios-${poema.id}" style="display:none"><div class="comentarios-caja">${comentariosHTML}<div style="display:flex;gap:5px;margin-top:10px"><input type="text" id="input-comentario-${poema.id}" placeholder="Escribe un comentario..."><button onclick="agregarComentario('${poema.id}')">Enviar</button></div></div></div></div>`;});}
+window.darLike = async function(id) {const ref = doc(db, "poemas", id);await updateDoc(ref, {likes: increment(1)});}
+window.toggleComentarios = function(id) {let caja = document.getElementById(`comentarios-${id}`);caja.style.display = caja.style.display === 'none' ? 'block' : 'none';}
+window.agregarComentario = async function(id) {let input = document.getElementById(`input-comentario-${id}`);let texto = input.value.trim();if(texto === "") return;if(!usuarioActual){alert("Inicia sesión para comentar");return;}const ref = doc(db, "poemas", id);let poema = poemas.find(p => p.id === id);let comentariosViejos = poema.comentarios || [];comentariosViejos.push({usuario: usuarioActual, texto: texto, fecha: Date.now()});await updateDoc(ref, {comentarios: comentariosViejos});input.value = "";}
+
+window.toggleSeguir = function(){let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');if(seguidores.includes(usuarioActual)){seguidores = seguidores.filter(u => u !== usuarioActual)}else {seguidores.push(usuarioActual)}localStorage.setItem('seguidoresJardin', JSON.stringify(seguidores));actualizarBotonSeguir();actualizarContadorSeguidores();}
+function actualizarBotonSeguir(){let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');let btn = document.getElementById('btn-seguir-nav');if(seguidores.includes(usuarioActual)){btn.innerText = "Siguiendo"; btn.classList.add('seguido')}else {btn.innerText = "Seguir"; btn.classList.remove('seguido')}}
+function actualizarContadorSeguidores(){let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');document.getElementById('contador-seguidores').innerText = seguidores.length;}
+window.mostrarPagina = function(pagina) {document.querySelectorAll('.pagina').forEach(p => p.classList.remove('activa'));document.querySelectorAll('nav button').forEach(b => b.classList.remove('activo'));document.getElementById(pagina).classList.add('activa');document.getElementById('btn-' + pagina).classList.add('activo');}
+window.onload = function() {let nombre = localStorage.getItem('usuarioActual');if(nombre){entrar(nombre);}actualizarContadorSeguidores();}
 </script>
 </body></html>

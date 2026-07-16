@@ -6,7 +6,11 @@
 <title>Panel Admin - El Jardín</title>
 <style>
 body{background:linear-gradient(135deg,#5a3e5e 0%,#a855b7 100%);font-family:Georgia;padding:20px;margin:0;color:white;min-height:100vh}
-.container{max-width:900px;margin:auto}
+#login-admin{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;justify-content:center;align-items:center;z-index:999}
+.caja-login{background:white;padding:30px;border-radius:20px;text-align:center;color:#333;box-shadow:0 15px 40px rgba(0,0,0,0.3)}
+.caja-login input{width:100%;padding:12px;margin:10px 0;border:2px solid #d299c2;border-radius:10px;font-family:Georgia;box-sizing:border-box;font-size:16px}
+.caja-login button{background:linear-gradient(135deg,#a855b7 0%,#d299c2 100%);color:white;border:none;padding:12px 20px;border-radius:25px;width:100%;cursor:pointer;font-size:16px;font-weight:bold}
+.container{max-width:900px;margin:auto;display:none}
 h1{text-align:center;font-size:40px;text-shadow:2px 2px 4px rgba(0,0,0,0.3)}
 .stats{background:rgba(255,255,255,0.2);padding:20px;border-radius:15px;text-align:center;margin-bottom:20px;display:flex;justify-content:space-around;flex-wrap:wrap}
 .stats h3{margin:5px 10px;font-size:18px}
@@ -25,7 +29,17 @@ button.eliminar{background:#ff4d6d}
 </style>
 </head>
 <body>
-<div class="container">
+
+<div id="login-admin">
+    <div class="caja-login">
+        <h2>🌸 Acceso Admin 🌸</h2>
+        <p style="color:#5a3e5e">Solo María Paula</p>
+        <input type="password" id="pass-admin" placeholder="Contraseña">
+        <button onclick="entrarAdmin()">Entrar</button>
+    </div>
+</div>
+
+<div class="container" id="panel-real">
     <h1>🌸 Panel de María Paula 🌸</h1>
     
     <div class="stats">
@@ -53,22 +67,55 @@ button.eliminar{background:#ff4d6d}
     <a href="index.html" class="link-volver">← Volver al Jardín</a>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCFL2dR5diNcME77pOqraScpfk3YFMRHQY",
+  authDomain: "jardin-maria-paula.firebaseapp.com",
+  projectId: "jardin-maria-paula",
+  storageBucket: "jardin-maria-paula.firebasestorage.app",
+  messagingSenderId: "640288766601",
+  appId: "1:640288766601:web:bca09b2359c3fc5209e458",
+  measurementId: "G-7MMBDYGPMS"
+};
+const app = initializeApp(firebaseConfig); 
+const db = getFirestore(app); 
 let poemas = [];
-window.onload = function() {cargarPoemas();mostrarPoemasAdmin();actualizarStats();}
-function agregarPoema() {
+
+const CONTRASEÑA_ADMIN = "mariapaula14";
+
+window.entrarAdmin = function() {
+    let pass = document.getElementById('pass-admin').value;
+    if(pass === CONTRASEÑA_ADMIN){
+        document.getElementById('login-admin').style.display = 'none';
+        document.getElementById('panel-real').style.display = 'block';
+        escucharPoemas();
+        actualizarStats();
+    } else { alert("Contraseña incorrecta 😅"); }
+}
+
+window.agregarPoema = async function() {
     let titulo = document.getElementById('titulo-poema').value.trim();
     let texto = document.getElementById('texto-poema').value.trim();
     if(titulo === "" || texto === "") {alert("Escribe título y poema");return;}
-    let nuevoPoema = {id: Date.now(), titulo: titulo, texto: texto, likes: 0, comentarios: []};
-    poemas.unshift(nuevoPoema);
-    guardarPoemas();
-    mostrarPoemasAdmin();
+    await addDoc(collection(db, "poemas"), {titulo, texto, likes: 0, comentarios: [], fecha: Date.now()});
     limpiarFormulario();
-    actualizarStats();
     alert("Poema publicado! 💜");
 }
-function mostrarPoemasAdmin() {
+
+function escucharPoemas() {
+    const q = query(collection(db, "poemas"), orderBy("fecha", "desc"));
+    onSnapshot(q, (snapshot) => {
+        poemas = []; 
+        snapshot.forEach((docu) => { poemas.push({id: docu.id, ...docu.data()}); });
+        mostrarPoemasAdmin();
+        actualizarStats();
+    });
+}
+
+window.mostrarPoemasAdmin = function() {
     let contenedor = document.getElementById('lista-admin');
     contenedor.innerHTML = "";
     if(poemas.length === 0) {
@@ -88,21 +135,19 @@ function mostrarPoemasAdmin() {
             <p style="white-space:pre-line;font-size:14px">${poema.texto.substring(0,150)}${poema.texto.length > 150 ? '...' : ''}</p>
             <div class="stats-poema">💜 Likes: ${poema.likes || 0} | 💬 Comentarios: ${(poema.comentarios || []).length}</div>
             <div>${comentariosHTML}</div>
-            <button class="eliminar" onclick="eliminarPoema(${poema.id})">Eliminar</button>
+            <button class="eliminar" onclick="eliminarPoema('${poema.id}')">Eliminar</button>
         </div>`;
     });
 }
-function eliminarPoema(id) {
+
+window.eliminarPoema = async function(id) {
     if(confirm("¿Segura que quieres eliminar este poema?")) {
-        poemas = poemas.filter(p => p.id !== id);
-        guardarPoemas();
-        mostrarPoemasAdmin();
-        actualizarStats();
+        await deleteDoc(doc(db, "poemas", id));
     }
 }
-function limpiarFormulario(){document.getElementById('titulo-poema').value = "";document.getElementById('texto-poema').value = "";}
-function cargarPoemas() {let guardados = localStorage.getItem('poemasJardin');if(guardados) { poemas = JSON.parse(guardados); }}
-function guardarPoemas() {localStorage.setItem('poemasJardin', JSON.stringify(poemas));}
+
+window.limpiarFormulario = function(){document.getElementById('titulo-poema').value = "";document.getElementById('texto-poema').value = "";}
+
 function actualizarStats(){
     let seguidores = JSON.parse(localStorage.getItem('seguidoresJardin') || '[]');
     let totalLikes = poemas.reduce((sum, p) => sum + (p.likes || 0), 0);
